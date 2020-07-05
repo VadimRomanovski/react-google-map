@@ -45,7 +45,7 @@ loadMapScript = () => {
         zoom: 13,
         mapTypeId: 'roadmap',
     });
-    const locations = this.state.locations;    
+    const locations = [...this.state.locations];    
     const markers = locations.map((location) => {
         return new window.google.maps.Marker({
             position: location,
