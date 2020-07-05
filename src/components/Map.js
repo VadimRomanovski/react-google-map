@@ -52,7 +52,7 @@ loadMapScript = () => {
             map: map
         });
     });
-    var polygon = new window.google.maps.Polygon({
+    const polygon = new window.google.maps.Polygon({
         paths: this.state.polygonCoords,
         strokeColor: "#FF0000",
         strokeOpacity: 0.8,
