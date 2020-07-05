@@ -29,7 +29,6 @@ class Map extends React.Component {
                 {lat: 53.903148, lng: 27.547900},
                 {lat: 53.901522, lng: 27.550192}
                 ],
-            mapCenter: {lat: 53.904303, lng: 27.543319},
             polygonCoords: [
                 { lat: 25.774, lng: -80.19 },
                 { lat: 18.466, lng: -66.118 },
@@ -41,17 +40,21 @@ class Map extends React.Component {
 loadMapScript = () => {
     const mapId = document.getElementById(this.props.id);
     const map = new window.google.maps.Map(mapId, {
-        center: this.state.mapCenter,
-        zoom: 13,
+        center: {lat: 53.904303, lng: 27.543319},
+        zoom: 5,
         mapTypeId: 'roadmap',
     });
-    const locations = [...this.state.locations];    
+    const locations = [...this.state.locations];  
+    const mapLatLngBounds = new window.google.maps.LatLngBounds();  
     const markers = locations.map((location) => {
+        mapLatLngBounds.extend(location);
         return new window.google.maps.Marker({
             position: location,
             map: map
         });
     });
+    map.setCenter(mapLatLngBounds.getCenter());
+    map.fitBounds(mapLatLngBounds);
     const polygon = new window.google.maps.Polygon({
         paths: this.state.polygonCoords,
         strokeColor: "#FF0000",
@@ -63,30 +66,7 @@ loadMapScript = () => {
     polygon.setMap(map);
 };
 
-calculateMapCenter = () => {
-  let locationsCopy = [...this.state.locations];
-  let minLat = locationsCopy[0].lat;
-  let maxLat = minLat;
-  for (let i = 1; i < locationsCopy.length; ++i) {
-    if (locationsCopy[i] > maxLat) maxLat = locationsCopy[i];
-    if (locationsCopy[i] < minLat) minLat = locationsCopy[i];
-  }
-
-  let minLng = locationsCopy[0].lng;
-  let maxLng = minLng;
-  for (let i = 1; i < locationsCopy.length; ++i) {
-    if (locationsCopy[i] > maxLng) maxLng = locationsCopy[i];
-    if (locationsCopy[i] < minLng) minLng = locationsCopy[i];
-  }
-  let averageLat = (maxLat + minLat) / 2;
-  let averageLng = (maxLng + minLng) / 2;
-
-  let coords = {lat: averageLat, lng: averageLng};
-  this.setState({mapCenter: coords});
-};
-
 componentDidMount() {
-    this.calculateMapCenter();
     const script = document.createElement('script');
     const API_KEY = 'AIzaSyAyesbQMyKVVbBgKVi2g6VX7mop2z96jBo';
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}`;
