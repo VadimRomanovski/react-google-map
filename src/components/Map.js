@@ -4,36 +4,9 @@ class Map extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            locations: [
-                {lat: 53.901862, lng: 27.556892},
-                {lat: 53.901268, lng: 27.555197},
-                {lat: 53.900914, lng: 27.556248},
-                {lat: 53.900920, lng: 27.556260},
-                {lat: 53.900705, lng: 27.554274},
-                {lat: 53.900073, lng: 27.551313},
-                {lat: 53.901122, lng: 27.555755},
-                {lat: 53.900534, lng: 27.556538},
-                {lat: 53.903007, lng: 27.559483},
-                {lat: 53.904221, lng: 27.556822},
-                {lat: 53.904303, lng: 27.543319},
-                {lat: 53.908155, lng: 27.550561},
-                {lat: 53.907352, lng: 27.555651},
-                {lat: 53.904222, lng: 27.545102},
-                {lat: 53.903988, lng: 27.548643},
-                {lat: 53.905387, lng: 27.557389},
-                {lat: 53.900090, lng: 27.550589},
-                {lat: 53.901866, lng: 27.557970},
-                {lat: 53.903073, lng: 27.560019},
-                {lat: 53.903952, lng: 27.557337},
-                {lat: 53.904020, lng: 27.545958},
-                {lat: 53.903148, lng: 27.547900},
-                {lat: 53.901522, lng: 27.550192}
-                ],
-            polygonCoords: [
-                { lat: 25.774, lng: -80.19 },
-                { lat: 18.466, lng: -66.118 },
-                { lat: 32.321, lng: -64.757 }
-            ]
+            isFetching: true,
+            locations: null,
+            polygonCoords: null
         };
     }
 
@@ -45,12 +18,17 @@ loadMapScript = () => {
         mapTypeId: 'roadmap',
     });
     const locations = [...this.state.locations];  
-    const mapLatLngBounds = new window.google.maps.LatLngBounds();  
+    const mapLatLngBounds = new window.google.maps.LatLngBounds(); 
+    const markerIco = {
+        url: "https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678085-house-512.png",
+        scaledSize: new window.google.maps.Size(40, 40)
+    };
     const markers = locations.map((location) => {
         mapLatLngBounds.extend(location);
         return new window.google.maps.Marker({
             position: location,
-            map: map
+            map: map,
+            icon: markerIco
         });
     });
     map.setCenter(mapLatLngBounds.getCenter());
@@ -66,7 +44,25 @@ loadMapScript = () => {
     polygon.setMap(map);
 };
 
+getCoords = async () => {
+    fetch(`http://localhost:5000/`)
+    .then(response => response.json())
+    .then(coords => {
+        this.setState(
+            {
+                locations: coords.locations, 
+                polygonCoords: coords.polygonCoords, 
+                isFetching: false 
+            }
+        )
+    })
+    .catch(e => {
+        console.log(e);
+    });
+};
+
 componentDidMount() {
+    this.getCoords()
     const script = document.createElement('script');
     const API_KEY = 'AIzaSyAyesbQMyKVVbBgKVi2g6VX7mop2z96jBo';
     script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}`;
